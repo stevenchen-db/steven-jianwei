@@ -5,12 +5,10 @@ UNAME             := $(shell uname)
 SRC                = src
 BUILD              = build
 CXXFLAGS          += -std=c++17 -Wall -Werror -O2 -DNDEBUG
+
 CXXFLAGS          += -I${INSTALL_SP}/include
 LDFLAGS           += -L${INSTALL_SP}/lib -lsentencepiece
-
-ifeq ($(UNAME), Linux)
-	LDFLAGS   += -Wl,-rpath,${INSTALL_SP}/lib
-endif # UNAME
+LDFLAGS           += -Wl,-rpath,${INSTALL_SP}/lib
 
 # sentencepiece related
 SRC_SP             = third_party/sentencepiece
