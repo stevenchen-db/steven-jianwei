@@ -11,5 +11,6 @@ make bootstrap
 Run
 ```
 make compile
-make run_encoder
+make run_encoder_demo
+make run_encoder_mistral
 ```
