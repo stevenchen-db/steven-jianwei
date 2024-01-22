@@ -25,18 +25,51 @@ main( int argc, char *argv[] )
 {
     sentencepiece::SentencePieceProcessor         sp;
     std::vector<std::string>                      sps;
+    std::vector<int>                              ids;
     std::function<void( absl::string_view line )> process;
+
+    bool id_mode = false;
+    auto input   = "Tested sentence to encode.";
 
     CHECK_OK( sp.Load( MODEL_FILE ) );
 
-    process = [&]( absl::string_view line ) {
-        CHECK_OK( sp.Encode( line, &sps ) );
-        for ( auto &sp : sps ) {
-            printf( "%s ", sp.c_str( ) );
-        }
-        printf( "\n" );
-    };
+    // Naive argv handling. Must be in order.
+    // -- ID model
+    if ( argc >= 2 && 0 == strcmp( argv[1], "--id" ) ) {
+        argc--;
+        argv = argv + 1;
 
-    process( "Tested sentence to encode." );
+        id_mode = true;
+    }
+
+    // -- Input
+    if ( argc >= 2 ) {
+        argc--;
+        argv++;
+
+        input = argv[0];
+    }
+
+    // The real logic
+    if ( id_mode ) {
+        process = [&]( absl::string_view line ) {
+            CHECK_OK( sp.Encode( line, &ids ) );
+            for ( auto &id : ids ) {
+                printf( "%d ", id );
+            }
+            printf( "\n" );
+        };
+    } else {
+        process = [&]( absl::string_view line ) {
+            CHECK_OK( sp.Encode( line, &sps ) );
+            for ( auto &sp : sps ) {
+                printf( "%s ", sp.c_str( ) );
+            }
+            printf( "\n" );
+        };
+    }
+
+    process( input );
+
     return 0;
 }
