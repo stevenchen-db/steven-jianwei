@@ -62,6 +62,22 @@ ${INSTALL_MISTRAL}/tokenizer.model:
 	mkdir -p ${INSTALL_MISTRAL} && \
 	wget https://github.com/stevenchen-db/steven-jianwei/releases/download/v0.0.1/tokenizer.model -O ${INSTALL_MISTRAL}/tokenizer.model
 
+.PHONY: bootstrap_python
+bootstrap_python:
+	@echo "Checking for Python3..."
+	@command -v python3 >/dev/null 2>&1 || { \
+			echo "Python3 not found. Installing..."; \
+			sudo apt-get update; \
+			sudo apt-get install -y python3 python3-pip; \
+		}
+	@echo "Python3 is installed."
+	@echo "Installing torch..."
+	@python3 -m pip install torch
+	@echo "torch is installed."
+	@python3 -m pip install transformers
+	@echo "transformers is installed"
+
+
 # ---------
 # cc
 compile: encoder_demo encoder_mistral
@@ -78,6 +94,11 @@ encoder_mistral: ${BUILD}/encoder_mistral
 run_encoder_mistral: ${BUILD}/encoder_mistral
 	$<
 
+
+.PHONY: run_encoder_mistral_py
+run_encoder_mistral_py:
+	python3 ${SRC}/mistral_tokenize.py
+
 .PHONY: encoder_demo run_encoder_demo encoder_mistral run_encoder_mistral
 
 ${BUILD}/encoder_demo: ${SRC}/encoder_main.cc | ${BUILD}
@@ -85,7 +106,6 @@ ${BUILD}/encoder_demo: ${SRC}/encoder_main.cc | ${BUILD}
 
 ${BUILD}/encoder_mistral: ${SRC}/encoder_main.cc | ${BUILD}
 	${CXX} -o $@ ${CXXFLAGS} -DMODEL_FILE='"${INSTALL_MISTRAL}/tokenizer.model"' $< ${LDFLAGS}
-
 
 ${BUILD}:
 	mkdir -p ${BUILD}
